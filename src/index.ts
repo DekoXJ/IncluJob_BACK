@@ -12,6 +12,7 @@ import { errorHandler } from './middleware/errorHandler';
 import courseRoutes from './routes/courseRoutes';
 import applicationRoutes from './routes/applicationRoutes';
 import userRoutes from './routes/userRoutes';
+import rolesRouter from './routes/rolesRoutes';
 
 const app = express();
 app.use(cors());
@@ -27,6 +28,7 @@ app.use(express.json());
     app.use('/api/users',     userRoutes); 
     app.use('/api/jobs', jobRoutes);
     app.use('/api/courses', courseRoutes);
+    app.use('/api/roles', rolesRouter);
     app.use('/api/applications', applicationRoutes);
     app.use(errorHandler);
 
