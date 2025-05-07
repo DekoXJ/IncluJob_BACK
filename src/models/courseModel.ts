@@ -1,8 +1,8 @@
-// src/models/courseModel.ts
 import { pool } from '../config/db';
 
 export interface Course {
   id: number;
+  owner_id: number;
   title: string;
   description?: string;
   type: 'text' | 'video' | 'audio';
@@ -15,19 +15,20 @@ export async function createCourse(data: {
   description?: string;
   type: 'text' | 'video' | 'audio';
   resource_url: string;
+  owner_id: number;
 }): Promise<Course> {
   const result = await pool.query<Course>(
-    `INSERT INTO courses (title, description, type, resource_url)
-     VALUES ($1, $2, $3, $4)
-     RETURNING id, title, description, type, resource_url, created_at`,
-    [data.title, data.description || null, data.type, data.resource_url]
+    `INSERT INTO courses (title, description, type, resource_url, owner_id)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, owner_id, title, description, type, resource_url, created_at`,
+    [data.title, data.description || null, data.type, data.resource_url, data.owner_id]
   );
   return result.rows[0];
 }
 
 export async function getAllCourses(): Promise<Course[]> {
   const result = await pool.query<Course>(
-    `SELECT id, title, description, type, resource_url, created_at
+    `SELECT id, owner_id, title, description, type, resource_url, created_at
      FROM courses
      ORDER BY created_at DESC`
   );
@@ -36,7 +37,7 @@ export async function getAllCourses(): Promise<Course[]> {
 
 export async function getCourseById(id: number): Promise<Course | null> {
   const result = await pool.query<Course>(
-    `SELECT id, title, description, type, resource_url, created_at
+    `SELECT id, owner_id, title, description, type, resource_url, created_at
      FROM courses
      WHERE id = $1`,
     [id]
@@ -53,37 +54,41 @@ export async function updateCourse(
     resource_url?: string;
   }
 ): Promise<Course | null> {
-  const sets: string[] = [];
+  const updates: string[] = [];
   const values: any[] = [];
-  let idx = 1;
+  let index = 1;
 
   if (data.title !== undefined) {
-    sets.push(`title = $${idx++}`);
+    updates.push(`title = $${index++}`);
     values.push(data.title);
   }
   if (data.description !== undefined) {
-    sets.push(`description = $${idx++}`);
+    updates.push(`description = $${index++}`);
     values.push(data.description);
   }
   if (data.type !== undefined) {
-    sets.push(`type = $${idx++}`);
+    updates.push(`type = $${index++}`);
     values.push(data.type);
   }
   if (data.resource_url !== undefined) {
-    sets.push(`resource_url = $${idx++}`);
+    updates.push(`resource_url = $${index++}`);
     values.push(data.resource_url);
   }
-  if (sets.length === 0) {
+
+  if (updates.length === 0) {
     return getCourseById(id);
   }
+
   values.push(id);
-  const result = await pool.query<Course>(
-    `UPDATE courses
-     SET ${sets.join(', ')}
-     WHERE id = $${idx}
-     RETURNING id, title, description, type, resource_url, created_at`,
-    values
-  );
+
+  const query = `
+    UPDATE courses
+    SET ${updates.join(', ')}
+    WHERE id = $${index}
+    RETURNING id, owner_id, title, description, type, resource_url, created_at
+  `;
+
+  const result = await pool.query<Course>(query, values);
   return result.rows[0] || null;
 }
 

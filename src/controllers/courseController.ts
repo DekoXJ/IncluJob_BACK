@@ -7,13 +7,14 @@ import {
   deleteCourse,
 } from '../models/courseModel';
 
+// Ajustando la firma de tipo de createCourseHandler
 export const createCourseHandler: RequestHandler = async (req, res, next) => {
   try {
-    const { title, description, type, resource_url } = req.body;
-    const course = await createCourse({ title, description, type, resource_url });
-    res.status(201).json(course);
+    const { title, description, type, resource_url, owner_id } = req.body;  // Asegúrate de que owner_id esté en el cuerpo de la solicitud
+    const company = await createCourse({ title, description, type, resource_url, owner_id });
+    res.status(201).json(company);  // Devuelve la respuesta directamente
   } catch (err) {
-    next(err);
+    next(err);  // Delega el manejo de errores al middleware de errores
   }
 };
 

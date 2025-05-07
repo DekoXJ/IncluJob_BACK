@@ -13,7 +13,6 @@ import courseRoutes from './routes/courseRoutes';
 import applicationRoutes from './routes/applicationRoutes';
 import userRoutes from './routes/userRoutes';
 import rolesRouter from './routes/rolesRoutes';
-
 const app = express();
 app.use(cors());
 app.use(express.json());
